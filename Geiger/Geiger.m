@@ -1,4 +1,4 @@
-function varargout=Geiger(xver)
+%function varargout=Geiger(xver)
 % [ah1,ah2,t1,t2,tt]=GEIGER(xver)
 %
 % solves the nonlinear problem F(m) = d where m = (x, y, z, t) 
@@ -15,7 +15,7 @@ function varargout=Geiger(xver)
 %   t2      The title of the first figure
 %   tt      The overarching title
 
-defval('xver',0)
+%defval('xver',0)
 
 
 % DATA %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -159,6 +159,7 @@ end
  
 
 % Uncertainty Quantification
+CLS=[0.4 0.68 0.95];
 
 % data covariance (noise level)
 sigma_d = std(data_residuals); 
@@ -168,9 +169,9 @@ sigma_d = std(data_residuals);
 Cm = sigma_d^2 * inv(G' * G); 
 
 % Scale for the ellipse
-s1=sqrt(chi2inv(0.4,2));
-s2=sqrt(chi2inv(0.68,2));
-s3=sqrt(chi2inv(0.95,2));
+s1=sqrt(chi2inv(CLS(1),2));
+s2=sqrt(chi2inv(CLS(2),2));
+s3=sqrt(chi2inv(CLS(3),2));
 
 
 Cxy = Cm(1:2,1:2);
@@ -207,6 +208,44 @@ end
 counts1 = sum(inpolygon(MC_models(1,:), MC_models(2,:), x + ellipse1(1,:), y + ellipse1(2,:)));
 counts2 = sum(inpolygon(MC_models(1,:), MC_models(2,:), x + ellipse2(1,:), y + ellipse2(2,:)));
 counts3 = sum(inpolygon(MC_models(1,:), MC_models(2,:), x + ellipse3(1,:), y + ellipse3(2,:)));
+
+
+% Experiment with trying all possible combinations %%%%%%%%%%%%%%%%%%%
+% possible x-values
+i = -250:5:250;
+% possible y-values
+j = -250:5:250;
+
+[x_i, y_i] = meshgrid(i, j);
+x_pairs = x_i(:);
+y_pairs = y_i(:);
+
+%best_z = m(3);
+%best_t = m(4);
+
+avg_z = mean(stationlocations(:, 3));
+avg_t = mean(noisyarrivaltimes);
+
+d_try_misfit = zeros(length(x_pairs), 1); %store data misfit
+
+for k = 1:length(x_pairs)
+        m_try = [x_pairs(k); y_pairs(k); avg_z; avg_t];
+        d_try = G * m_try;
+
+        residual = noisyarrivaltimes - d_try;
+        d_try_misfit(k) = norm(residual);
+end
+
+misfit_grid = reshape(d_try_misfit, length(x_i), length(y_i));
+
+figure
+surf(x_i, y_i, misfit_grid)
+xlabel("X")
+ylabel("Y")
+colorbar
+
+
+
 
 % PLOTTING %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 set(groot, 'defaultTextInterpreter','latex') % All in latex font
@@ -305,11 +344,11 @@ ylabel("Y Coordinate ")
 xlim([-70, -30])
 ylim([-190, -130])
 legend( ...
-    sprintf("CL = 0.4, %d points", counts1), ...
-    sprintf("CL = 0.68, %d points", counts2), ...
-    sprintf("CL = 0.95, %d points", counts3), ...
+    sprintf("CL = %4.2f, %d points", CLS(1), counts1), ...
+    sprintf("CL = %4.2f, %d points", CLS(2), counts2), ...
+    sprintf("CL = %4.2f, %d points", CLS(3), counts3), ...
     "Truth")
-t2(3) = title(['$\mathcal{X}^2$ Uncertainty Bound']);
+t2(3) = title(['$\chi^2$ Uncertainty Bound']);
 hold off
 
 axes(ah2(4))
@@ -346,16 +385,16 @@ box on
 axes(ah2(4))
 box on
 
-if xver==1
-    tic
-    %  MAKE THE PLOT
-    figure(1)
-    exportgraphics(fh(1),sprintf('%s_%i.pdf',mfilename,1))
-    figure(2)
-    exportgraphics(fh(2),sprintf('%s_%i.pdf',mfilename,2))
-    disp(sprintf('Writing the PDF took %4.2f s',toc))
-end
+% if xver==1
+%     tic
+%     %  MAKE THE PLOT
+%     figure(1)
+%     exportgraphics(fh(1),sprintf('%s_%i.pdf',mfilename,1))
+%     figure(2)
+%     exportgraphics(fh(2),sprintf('%s_%i.pdf',mfilename,2))
+%     disp(sprintf('Writing the PDF took %4.2f s',toc))
+% end
 
 % OPTIONAL OUTPUTS
-varns={ah1,ah2,t1,t2,tt};
-varargout=varns(1:nargout);
+% varns={ah1,ah2,t1,t2,tt};
+% varargout=varns(1:nargout);

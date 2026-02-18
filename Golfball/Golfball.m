@@ -16,32 +16,24 @@
 % end
 % 
 
-
 %%% data %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 data = [
   596.8100  450.6845
   591.2995  443.5996
-  591.2995  443.5996
   556.6624  382.1974
-  542.4926  334.9649
   542.4926  334.9649
   483.4520  188.5443
   459.0486  143.6734
-  459.0486  143.6734
   416.5394   79.9096
-  393.7103   58.6550
   393.7103   58.6550
   329.9465   35.8260
   310.2663   32.6771
-  310.2663   32.6771
   266.1827   61.0166
-  227.6095  106.6747
   227.6095  106.6747
   192.1851  175.1617
   176.4410  217.6710
-  181.1642  212.9477
+  %181.1642  212.9477
   135.5062  359.3684
-  117.4004  416.0474
   117.4004  416.0474 ];
 
 y = data(:, 2);
@@ -53,9 +45,9 @@ height_ball = 43.2174 - 23.6522; % obtained through ginput
 length_scale = 4 / height_ball;
 y = y* length_scale;
 
-% there are 25 fps and 24 photos, so we will say each photo is 1/25th of a
+% there are 25 fps and 16 photos, so we will say each photo is 1/25th of a
 % second
-unit_time = 1 / 25;
+unit_time = 0.0566;
 t = 0 : unit_time : (length(y) - 1)*unit_time; %seconds
 
 
@@ -94,7 +86,6 @@ deg_free = N - 3; % number of data points - number of parameters
 chi2_obs = (residual' * residual) / sigma_2;
 p_value = 1 - chi2cdf(chi2_obs, deg_free);
 
-
 % Visualizing C.L. Ellipses %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 s1=sqrt(chi2inv(0.4,2));
@@ -113,7 +104,7 @@ ellipse3 = s3*V * [a*cos(theta); b*sin(theta)];
 %Plotting %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 figure
 ah = gca;
-scatter(t, y)
+scatter(t, y, 'filled')
 xlabel("time (s)")
 ylabel("height (cm)")
 title("Projectile motion of a Golfball")
@@ -127,7 +118,7 @@ plot(v0 + ellipse1(1,:), a0 + ellipse1(2,:), 'b', 'LineWidth', 1.5)
 hold on
 plot(v0 + ellipse2(1,:), a0 + ellipse2(2,:), 'r', 'LineWidth', 1.5)
 plot(v0 + ellipse3(1,:), a0 + ellipse3(2,:), 'g', 'LineWidth', 1.5)
-xlabel("Velocity (cm/s)")
+xlabel("Velocity $(cm/s)$")
 ylabel("Acceleration $(cm/s^2)$", Interpreter="latex")
 legend( ...
     sprintf("CL = 0.4"), ...
