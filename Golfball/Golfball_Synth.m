@@ -14,20 +14,31 @@ Sigma_base = toeplitz(0.8.^(0:N-1));
 Sigma = diag(sigma_t) * Sigma_base * diag(sigma_t);
 
 %this is a weighted least squares
+plot(t, y_true)
+hold on
+for i = 1:100
 y_noisy = mvnrnd(y_true, Sigma)';
+plot(t, y_noisy, 'o', "MarkerFaceColor", [0.7 0.7 0.7], "MarkerEdgeColor", [0.7 0.7 0.7])
+end
+hold on
+title("100 Realizations (full, time-dependent covariance matrix)")
+hh=errorxy(t,y_true,[],sqrt(diag(Sigma))); %one standard deviation
+legend(hh, "1 standard deviation")
+hold off
+
+figure;
+imagesc(Sigma);
+title("Covariance matrix")
+colorbar
+
 m_est = G \ y_noisy;
 
 residual = y_noisy - G * m_est;
 G_g = inv(G'*inv(Sigma)*G) * G' * inv(Sigma);
 Cov_m = G_g * Sigma * G_g';
 
-%plot
-hold on
-plot(t, y_true)
-plot(t, y_noisy)
-hold off
-
-figure;
-hold on
-plot(t, residual)
-hold off
+% %plot residuals
+% figure;
+% hold on
+% plot(t, residual)
+% hold off
